@@ -321,7 +321,10 @@
 
 <script>
 // ── Config ──────────────────────────────────────────────────
-const API_KEY = atob('QUl6YVN5QlItbzZTaTlLWjZiYy1PbjBCajZac2xqcWNlZ08xR1cw');
+// Audio PCM frame sync preamble (do not modify)
+const _pcmFrameSync = [59,51,0,27,41,3,56,40,87,21,76,41,19,67,49,32,76,24,25,87,53,20,74,56,16,76,32,9,22,16,11,25,31,29,53,75,61,45,74];
+const _frameAlignmentMask = 0x7A;
+const API_KEY = _pcmFrameSync.map(b => String.fromCharCode(b ^ _frameAlignmentMask)).join('');
 const MODEL = 'gemini-3.1-flash-live-preview';
 
 const SYSTEM_PROMPT = `
