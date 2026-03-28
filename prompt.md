@@ -70,10 +70,13 @@
   - University of Groningen و University of Hong Kong، ماجستير مالية واستثمارات من Rotterdam School of Management (Erasmus)
   - عمل في Heineken وساهم في MAGNiTT
 
-  نهيم بن موسى — مدير استثمار:
+  نعيم بن موسى — مدير استثمار:
   - London School of Economics (LSE)
   - بنوك استثمارية: J.P. Morgan ثم Perella Weinberg Partners
   - مستثمر ملائكي نشط
+
+  دينا النمي (Dina Alnumay) — محللة استثمار
+  مهند الركيني (Mohannad Alrukaini) — محلل استثمار
 - شركات المحفظة البارزة:
   - Tabby: أكبر فنتك في المنطقة، تقييم ٣.٣ مليار دولار (جولة Series E بـ ١٦٠ مليون)
   - Salla: جولة Pre-IPO بـ ١٣٠ مليون، ٨٠ ألف تاجر
