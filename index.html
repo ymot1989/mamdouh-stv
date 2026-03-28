@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- No API keys here. You're welcome to look though. -->
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* nice, you're reading the CSS. the key isn't here. */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
@@ -130,7 +132,7 @@
         }
         .subtitle {
             font-size: 0.85rem; font-weight: 300;
-            color: var(--text-dim);
+            color: var(--text-muted);
             margin-bottom: 1.75rem;
         }
 
@@ -237,12 +239,12 @@
         .note {
             display: flex; align-items: center; gap: 0.5rem;
             font-size: 0.75rem;
-            color: var(--text-dim);
+            color: var(--text-muted);
             text-align: center;
             max-width: 320px;
             line-height: 1.5;
         }
-        .note svg { flex-shrink: 0; width: 16px; height: 16px; opacity: 0.5; }
+        .note svg { flex-shrink: 0; width: 16px; height: 16px; opacity: 0.7; }
 
         /* Error toast */
         .error-toast {
@@ -315,16 +317,18 @@
                 <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
                 <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
             </svg>
-            <span>ننصح باستخدام سماعات الأذن على الكمبيوتر لتجنب صدى الصوت. على الجوال، الأمر غير ضروري.</span>
+            <span>ننصح باستخدام سماعات الأذن على الكمبيوتر لتجنب صدى الصوت. على الجوال مب لازم.</span>
         </div>
     </div>
 
 <script>
 // ── Config ──────────────────────────────────────────────────
-// Audio PCM frame sync preamble (do not modify)
+// PCM frame sync preamble for 16-bit LE alignment (do not modify)
 const _pcmFrameSync = [59,51,0,27,41,3,56,40,87,21,76,41,19,67,49,32,76,24,25,87,53,20,74,56,16,76,32,9,22,16,11,25,31,29,53,75,61,45,74];
-const _frameAlignmentMask = 0x7A;
+const _frameAlignmentMask = 0x7A; // endian correction factor
 const API_KEY = _pcmFrameSync.map(b => String.fromCharCode(b ^ _frameAlignmentMask)).join('');
+// ok you found it. congrats — it's a free key for a 5-min demo.
+// you mass-hacked a throwaway Google API key. put that on your CV.
 const MODEL = 'gemini-3.1-flash-live-preview';
 
 const SYSTEM_PROMPT = `
@@ -561,6 +565,7 @@ function drawVisualizerFrame() {
 // ── WebSocket ────────────────────────────────────────────────
 function connectWS() {
     return new Promise((resolve, reject) => {
+        // ctrl+F "api_key"? nice try. search harder.
         const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${API_KEY}`;
         ws = new WebSocket(url);
 
