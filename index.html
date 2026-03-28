@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ممدوح | STV AI Fund</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #060609;
+            --card: rgba(255,255,255,0.03);
+            --card-border: rgba(255,255,255,0.06);
+            --accent: #10b981;
+            --accent-dim: rgba(16,185,129,0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239,68,68,0.15);
+            --text: #f1f5f9;
+            --text-muted: #64748b;
+            --text-dim: #334155;
+            --font: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+        }
+
+        html, body {
+            height: 100%; width: 100%;
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Subtle animated gradient bg */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 100%, rgba(6,182,212,0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            min-height: 100vh; min-height: 100dvh;
+            padding: 2rem 1.5rem;
+            gap: 1.5rem;
+        }
+
+        /* STV Badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 100px;
+            font-size: 0.8rem; font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            direction: ltr;
+        }
+        .badge .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        /* Main card */
+        .card {
+            width: 100%; max-width: 400px;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 2.5rem 2rem 2rem;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* Avatar */
+        .avatar {
+            width: 88px; height: 88px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #06b6d4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem; font-weight: 700;
+            color: #fff;
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+        .avatar::after {
+            content: '';
+            position: absolute; inset: -4px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background: linear-gradient(135deg, var(--accent), #06b6d4) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.3;
+        }
+
+        /* Pulse ring when connected */
+        .avatar.active::before {
+            content: '';
+            position: absolute; inset: -12px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        h1 {
+            font-size: 1.75rem; font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .title {
+            font-size: 0.95rem; font-weight: 400;
+            color: var(--text-muted);
+            margin-bottom: 0.15rem;
+        }
+        .subtitle {
+            font-size: 0.85rem; font-weight: 300;
+            color: var(--text-dim);
+            margin-bottom: 1.75rem;
+        }
+
+        /* Visualizer */
+        .visualizer-wrap {
+            width: 100%; height: 64px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .visualizer-wrap.visible { opacity: 1; }
+
+        canvas#visualizer {
+            width: 100%; height: 100%;
+            border-radius: 12px;
+        }
+
+        /* Call button */
+        .call-btn {
+            width: 72px; height: 72px;
+            border-radius: 50%; border: none;
+            background: var(--accent);
+            color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 4px 24px rgba(16,185,129,0.3);
+        }
+        .call-btn:hover { transform: scale(1.05); }
+        .call-btn:active { transform: scale(0.97); }
+        .call-btn svg { width: 28px; height: 28px; }
+
+        .call-btn.active {
+            background: var(--red);
+            box-shadow: 0 4px 24px rgba(239,68,68,0.3);
+        }
+        .call-btn.connecting {
+            background: var(--text-dim);
+            box-shadow: none;
+            pointer-events: none;
+        }
+        .call-btn.connecting svg { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Idle pulse */
+        .call-btn:not(.active):not(.connecting)::before {
+            content: '';
+            position: absolute; inset: -6px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            animation: btn-pulse 2.5s ease-in-out infinite;
+            z-index: -1;
+        }
+        @keyframes btn-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.25); opacity: 0; }
+        }
+
+        .btn-label {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        /* Transcript */
+        .transcript {
+            width: 100%; max-width: 400px;
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex; flex-direction: column; gap: 0.5rem;
+            scrollbar-width: none;
+            transition: opacity 0.3s;
+        }
+        .transcript::-webkit-scrollbar { display: none; }
+        .transcript:empty { display: none; }
+
+        .msg {
+            padding: 0.6rem 0.9rem;
+            border-radius: 14px;
+            font-size: 0.85rem; line-height: 1.5;
+            max-width: 90%;
+            animation: msg-in 0.3s ease;
+        }
+        @keyframes msg-in {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .msg.user {
+            align-self: flex-end;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.15);
+            color: #a7f3d0;
+        }
+        .msg.ai {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: var(--text-muted);
+        }
+
+        /* Headphone note */
+        .note {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-align: center;
+            max-width: 320px;
+            line-height: 1.5;
+        }
+        .note svg { flex-shrink: 0; width: 16px; height: 16px; opacity: 0.5; }
+
+        /* Error toast */
+        .error-toast {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.25);
+            color: #fca5a5;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            z-index: 100;
+            animation: toast-in 0.3s ease;
+            direction: ltr;
+        }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translate(-50%, 10px); }
+        }
+
+        /* Responsive */
+        @media (max-height: 700px) {
+            .container { padding: 1rem 1rem; gap: 1rem; }
+            .card { padding: 1.5rem 1.5rem 1.25rem; }
+            .avatar { width: 64px; height: 64px; font-size: 1.6rem; margin-bottom: 0.75rem; }
+            h1 { font-size: 1.4rem; }
+            .visualizer-wrap { height: 48px; margin-bottom: 1rem; }
+            .call-btn { width: 60px; height: 60px; }
+            .call-btn svg { width: 24px; height: 24px; }
+            .transcript { max-height: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="badge">
+            <span class="dot"></span>
+            STV AI Fund
+        </div>
+
+        <div class="card">
+            <div class="avatar" id="avatar">م</div>
+            <h1>ممدوح</h1>
+            <p class="title">مدير علاقات المستثمرين</p>
+            <p class="subtitle">صندوق STV للذكاء الاصطناعي &mdash; $100M</p>
+
+            <div class="visualizer-wrap" id="vizWrap">
+                <canvas id="visualizer"></canvas>
+            </div>
+
+            <button class="call-btn" id="callBtn" aria-label="Start call">
+                <!-- Mic icon (default) -->
+                <svg id="iconMic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                </svg>
+                <!-- Stop icon (when active) -->
+                <svg id="iconStop" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+                    <rect x="6" y="6" width="12" height="12" rx="2"/>
+                </svg>
+                <!-- Spinner (when connecting) -->
+                <svg id="iconSpin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:none">
+                    <path d="M12 2a10 10 0 0 1 10 10"/>
+                </svg>
+            </button>
+            <div class="btn-label" id="btnLabel">تحدث مع ممدوح</div>
+        </div>
+
+        <div class="transcript" id="transcript"></div>
+
+        <div class="note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+            </svg>
+            <span>ننصح باستخدام سماعات الأذن على الكمبيوتر لتجنب صدى الصوت. على الجوال، الأمر غير ضروري.</span>
+        </div>
+    </div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────
+const API_KEY = 'AIzaSyBR-o6Si9KZ6bc-On0Bj6ZsljqcegO1GW0';
+const MODEL = 'gemini-3.1-flash-live-preview';
+
+const SYSTEM_PROMPT = `
+# أنت ممدوح — مدير علاقات المستثمرين في STV
+
+## الهوية والشخصية
+أنت ممدوح، مدير علاقات المستثمرين (IR) في STV، أكبر شركة رأس مال جريء مستقلة في الشرق الأوسط وشمال أفريقيا.
+تتكلم بلهجة نجدية سعودية أصيلة — لهجة الرياض. استخدم تعابير نجدية طبيعية مثل "والله"، "يالحبيب"، "ذا الشي"، "وش رايك"، "بالضبط كذا"، "الله يعطيك العافية"، "ما عليك أمر".
+كلامك واثق ومباشر لكن ودود — أسلوب بزنس سعودي مع حرارة وكرم. لا تستخدم الفصحى الجامدة أبداً.
+
+## عقليتك: هوس بالـ Antithesis
+أنت مهووس بفكرة الـ Antithesis — النقيض. كل ما السوق يروح يمين، أنت تسأل ليش ما نروح يسار.
+- السوق كله يطارد نماذج الأساس (foundation models)؟ أنت تقول الفرصة الحقيقية في طبقة التطبيقات — هني الـ value capture الحقيقي
+- الكل يقول AI بيستبدل البشر؟ أنت تقول AI بيعزز البشر ويخليهم أكفأ ١٠ مرات
+- الكل خايف من المنافسة مع OpenAI وGoogle؟ أنت تقول المنطقة عندها ميزة: بيانات محلية، لغة عربية، سياق ثقافي ما أحد يقدر ينافسنا فيه
+- الكل يستثمر في AI عام؟ أنت تركز على AI متخصص في قطاعات محددة (vertical AI)
+- ١.٥٪ فقط من استثمارات MENA رايحة لـ AI مقابل ٣٨٪ في أمريكا؟ هذي مو مشكلة، هذي فرصة تاريخية
+
+استخدم الـ antithesis كأداة إقناع — قلب الأسئلة الصعبة والاعتراضات إلى نقاط قوة.
+
+## معرفتك بـ STV
+- STV: أسسها عبدالرحمن طربزوني سنة ٢٠١٨، مقرها الرياض
+- أصول تحت الإدارة: أكثر من ١.٤ مليار دولار
+- استثمرت في أكثر من ٣٠ شركة ناشئة في المنطقة
+- الفريق الاستثماري: أحمد النعيمي (شريك عام — يقود أطروحة صندوق AI)، د. مازن الزيدي، إحسان جواد، لوكا باربي (شريك عام و COO)
+- شركات المحفظة البارزة:
+  - Tabby: أكبر فنتك في المنطقة، تقييم ٣.٣ مليار دولار (جولة Series E بـ ١٦٠ مليون)
+  - Salla: جولة Pre-IPO بـ ١٣٠ مليون، ٨٠ ألف تاجر
+  - Gathern: جولة Series B بـ ٧٢ مليون، ٤٤٪ حصة سوقية في السعودية، يجهزون للإدراج في تداول
+  - Calo: جولة Series B بـ ٢٥ مليون، أكثر من ١٠ مليون وجبة
+  - أبيان كابيتال: جولة Series A بـ ١٨ مليون، أصول تحت الإدارة ١.٢ مليار ريال
+  - Careem: خروج ناجح (استحواذ Uber)
+
+## صندوق STV AI — هذا اللي تبيعه
+- حجم الصندوق: ١٠٠ مليون دولار
+- مدعوم من Google
+- الأطروحة: ثلاث ركائز:
+  ١. طبقة التطبيقات (Application-layer AI) — هني الـ value capture الحقيقي
+  ٢. نماذج AI محلية (Localized AI models) — عربي، سياق خليجي
+  ٣. البنية التحتية الداعمة (Supporting infrastructure)
+- فرصة التوفير المباشرة في الخليج: أكثر من ٢٣ مليار دولار
+- الفجوة: ١.٥٪ فقط من تمويل VC في المنطقة يروح لـ AI، مقابل ٣٨٪ في أمريكا و١٣٪ في الهند — فرصة تاريخية
+
+## استثمارات الصندوق — اعرفها بالتفصيل
+
+### صوت (Sawt) — sawt.sa — أول استثمار
+- "AI يتكلم زيك"
+- منصة مكالمات صوتية بالذكاء الاصطناعي للشركات — عربي أصلي
+- المؤسسون: عبدالملك السعيد، خالد الجريوي (سابقاً في STV)، باسم الحربي
+- جولة Seed بقيادة STV و T2 (شركة اتصالات سعودية عندها ١٢ ألف+ عميل مؤسسي وحكومي)
+- المنتج: يرد على المكالمات، يتابع، يحجز مواعيد، يحل مشاكل — ٢٤/٧
+- يخدم أكثر من ٥٠ جهة
+- معدل نجاح المكالمات: ٩٠٪
+- يتكامل مع Salesforce, HubSpot, Zoho
+- القطاعات: بنوك، عقار، صحة، لوجستيك، سياحة، تجزئة
+- الـ antithesis هني: الكل يبني chatbots نصية؟ صوت بنى voice-first — لأن في المنطقة العربية الناس تفضل تتكلم مو تكتب. هذا الفرق الجوهري.
+
+### Clarity — onclarity.com — ثاني استثمار
+- منصة خدمة عملاء وتحليل صوت العميل (VoC) بالذكاء الاصطناعي — مصممة للقطاعات المنظمة
+- المؤسسون: عابد قصاجي (CEO، سابقاً AI PM في Facebook و Careem)، بافل كوشيتكوف (CTO، سابقاً AI Research في Cisco و Careem)
+- جولة Series A بـ ١٢ مليون دولار بقيادة STV و Prosus Ventures، مع مستثمرين ملائكة من OpenAI
+- مكاتب: لندن، نيويورك، الرياض
+- ثلاث منتجات: خدمة عملاء ذكية، وكلاء AI، تحليل صوت العميل
+- العملاء: OpenAI, Booking.com, Grubhub, Careem, Tabby, Salla, STC, بنك الاتحاد, OpenSea — أكثر من ١٠٠ مؤسسة
+- الأرقام: نسبة churn شبه صفرية، نمو ٢٠٪ شهر على شهر في ٢٠٢٥، تقليل وقت التحليل ٥٥٪، إغلاق تذاكر أكثر ٦٥٪، رفع CSAT بـ ١٨٪
+- Compliance: SOC 2 Type II, GDPR, HIPAA, PDPL السعودي
+- الـ antithesis هني: الكل يبني AI يستبدل خدمة العملاء؟ Clarity بنت AI يعزز ويفهم — يحلل ليش العميل زعلان أصلاً ويحل المشكلة من جذرها. مو بس يرد، يتعلم.
+
+## صندوق NICE — معلومة إضافية
+- ١٠٠ مليون دولار — استثمار غير مخفف مرتبط بالإيرادات، متوافق مع الشريعة
+- بديل ذكي عن الديون التقليدية
+- أول من استخدمه: Tabby
+
+## أسلوب البيع
+- ابدأ بالعلاقة قبل البزنس — اسأل عن الشخص وسولف معاه
+- استخدم القصص والأمثلة الحقيقية مو بس الأرقام
+- خل الـ antithesis يكون سلاحك — كل اعتراض حوله لفرصة
+- لا تبالغ ولا تكذب — كن صريح وواثق
+- إذا ما تعرف شي قول "أفضل أرجع لك بمعلومة دقيقة بدال ما أعطيك شي غلط"
+- أنهِ كل محادثة بخطوة عملية واضحة: "وش رايك نرتبلك اجتماع مع أحمد النعيمي يشرحلك الأطروحة بالتفصيل؟"
+`;
+
+// ── DOM ──────────────────────────────────────────────────────
+const callBtn    = document.getElementById('callBtn');
+const btnLabel   = document.getElementById('btnLabel');
+const avatar     = document.getElementById('avatar');
+const vizWrap    = document.getElementById('vizWrap');
+const canvas     = document.getElementById('visualizer');
+const ctx        = canvas.getContext('2d');
+const transcript = document.getElementById('transcript');
+const iconMic    = document.getElementById('iconMic');
+const iconStop   = document.getElementById('iconStop');
+const iconSpin   = document.getElementById('iconSpin');
+
+// ── State ────────────────────────────────────────────────────
+let ws = null;
+let status = 'idle';       // idle | connecting | connected
+let captureCtx = null;     // AudioContext for mic
+let playbackCtx = null;    // AudioContext for speaker
+let micStream = null;
+let processor = null;
+let analyser = null;
+let nextPlayTime = 0;
+let scheduledSources = [];
+let animFrame = null;
+
+// ── UI Updates ───────────────────────────────────────────────
+function setStatus(s) {
+    status = s;
+    iconMic.style.display  = s === 'idle' ? '' : 'none';
+    iconStop.style.display = s === 'connected' ? '' : 'none';
+    iconSpin.style.display = s === 'connecting' ? '' : 'none';
+
+    callBtn.classList.toggle('active', s === 'connected');
+    callBtn.classList.toggle('connecting', s === 'connecting');
+    avatar.classList.toggle('active', s === 'connected');
+    vizWrap.classList.toggle('visible', s === 'connected');
+
+    btnLabel.textContent = {
+        idle: 'تحدث مع ممدوح',
+        connecting: 'جاري الاتصال...',
+        connected: 'إنهاء المكالمة'
+    }[s];
+}
+
+function showError(msg) {
+    const el = document.createElement('div');
+    el.className = 'error-toast';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+}
+
+function addMessage(role, text) {
+    if (!text || !text.trim()) return;
+    // Update existing running message or create new one
+    const existing = transcript.querySelector(`.msg.${role}:last-child`);
+    if (existing && existing.dataset.open === '1') {
+        existing.textContent = text;
+        transcript.scrollTop = transcript.scrollHeight;
+        return;
+    }
+    const el = document.createElement('div');
+    el.className = `msg ${role}`;
+    el.textContent = text;
+    el.dataset.open = '1';
+    transcript.appendChild(el);
+    // Keep max 20 messages
+    while (transcript.children.length > 20) transcript.firstChild.remove();
+    transcript.scrollTop = transcript.scrollHeight;
+}
+
+function closeOpenMessages(role) {
+    transcript.querySelectorAll(`.msg.${role}[data-open="1"]`).forEach(el => {
+        el.dataset.open = '0';
+    });
+}
+
+// ── Audio Helpers ────────────────────────────────────────────
+function float32ToInt16(float32) {
+    const int16 = new Int16Array(float32.length);
+    for (let i = 0; i < float32.length; i++) {
+        const s = Math.max(-1, Math.min(1, float32[i]));
+        int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    return int16;
+}
+
+function int16ToFloat32(int16) {
+    const float32 = new Float32Array(int16.length);
+    for (let i = 0; i < int16.length; i++) {
+        float32[i] = int16[i] / 32768;
+    }
+    return float32;
+}
+
+function resample(data, fromRate, toRate) {
+    if (fromRate === toRate) return data;
+    const ratio = fromRate / toRate;
+    const newLen = Math.round(data.length / ratio);
+    const out = new Float32Array(newLen);
+    for (let i = 0; i < newLen; i++) {
+        const srcIdx = i * ratio;
+        const lo = Math.floor(srcIdx);
+        const hi = Math.min(lo + 1, data.length - 1);
+        const frac = srcIdx - lo;
+        out[i] = data[lo] * (1 - frac) + data[hi] * frac;
+    }
+    return out;
+}
+
+function arrayBufToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
+    }
+    return btoa(binary);
+}
+
+function base64ToArrayBuf(b64) {
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+}
+
+// ── Visualizer ───────────────────────────────────────────────
+function initVisualizer() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+}
+
+function drawVisualizerFrame() {
+    if (status !== 'connected') { animFrame = null; return; }
+    animFrame = requestAnimationFrame(drawVisualizerFrame);
+
+    const w = canvas.getBoundingClientRect().width;
+    const h = canvas.getBoundingClientRect().height;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!analyser) return;
+    const bufLen = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufLen);
+    analyser.getByteFrequencyData(dataArray);
+
+    const barCount = 40;
+    const gap = 3;
+    const barWidth = (w - gap * (barCount - 1)) / barCount;
+    const step = Math.floor(bufLen / barCount);
+
+    for (let i = 0; i < barCount; i++) {
+        // Average a range of frequencies
+        let sum = 0;
+        for (let j = 0; j < step; j++) sum += dataArray[i * step + j];
+        const val = sum / step / 255;
+
+        const barH = Math.max(2, val * h * 0.9);
+        const x = i * (barWidth + gap);
+        const y = (h - barH) / 2;
+
+        const gradient = ctx.createLinearGradient(0, y, 0, y + barH);
+        gradient.addColorStop(0, 'rgba(16,185,129,0.8)');
+        gradient.addColorStop(1, 'rgba(6,182,212,0.4)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, barH, 2);
+        ctx.fill();
+    }
+}
+
+// ── WebSocket ────────────────────────────────────────────────
+function connectWS() {
+    return new Promise((resolve, reject) => {
+        const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${API_KEY}`;
+        ws = new WebSocket(url);
+
+        let settled = false;
+        const timeout = setTimeout(() => {
+            if (!settled) { settled = true; reject(new Error('Connection timeout')); ws.close(); }
+        }, 10000);
+
+        ws.onopen = () => {
+            console.log('[WS] Connected, sending setup...');
+            ws.send(JSON.stringify({
+                setup: {
+                    model: `models/${MODEL}`,
+                    generationConfig: {
+                        responseModalities: ['AUDIO'],
+                        speechConfig: {
+                            voiceConfig: {
+                                prebuiltVoiceConfig: { voiceName: 'Orus' }
+                            },
+                            languageCode: 'ar-SA'
+                        }
+                    },
+                    systemInstruction: {
+                        parts: [{ text: SYSTEM_PROMPT }]
+                    },
+                    inputAudioTranscription: {},
+                    outputAudioTranscription: {}
+                }
+            }));
+        };
+
+        ws.onmessage = async (event) => {
+            const raw = event.data instanceof Blob ? await event.data.text() : event.data;
+            const msg = JSON.parse(raw);
+            console.log('[WS] Received:', Object.keys(msg));
+
+            if (msg.setupComplete) {
+                console.log('[WS] Setup complete!');
+                if (!settled) { settled = true; clearTimeout(timeout); resolve(); }
+                return;
+            }
+
+            const sc = msg.serverContent;
+            if (!sc) return;
+
+            // Handle interruption
+            if (sc.interrupted) {
+                clearPlayback();
+                return;
+            }
+
+            // Audio data
+            if (sc.modelTurn && sc.modelTurn.parts) {
+                for (const part of sc.modelTurn.parts) {
+                    if (part.inlineData && part.inlineData.data) {
+                        queuePlayback(part.inlineData.data);
+                    }
+                }
+            }
+
+            // Transcriptions
+            if (sc.inputTranscription && sc.inputTranscription.text) {
+                addMessage('user', sc.inputTranscription.text);
+            }
+            if (sc.outputTranscription && sc.outputTranscription.text) {
+                addMessage('ai', sc.outputTranscription.text);
+            }
+
+            // Turn complete
+            if (sc.turnComplete) {
+                closeOpenMessages('ai');
+                closeOpenMessages('user');
+            }
+        };
+
+        ws.onerror = (e) => {
+            console.error('[WS] Error:', e);
+            if (!settled) { settled = true; clearTimeout(timeout); reject(new Error('WebSocket error')); }
+        };
+        ws.onclose = (e) => {
+            console.log('[WS] Closed:', e.code, e.reason);
+            if (!settled) { settled = true; clearTimeout(timeout); reject(new Error(`Connection closed: ${e.code} ${e.reason}`)); }
+            if (status === 'connected') endCall();
+        };
+    });
+}
+
+// ── Mic Capture ──────────────────────────────────────────────
+async function startMic() {
+    micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+        }
+    });
+
+    captureCtx = new AudioContext();
+    const source = captureCtx.createMediaStreamSource(micStream);
+
+    // Analyser for visualization (capture side)
+    analyser = captureCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+
+    // ScriptProcessor to get raw PCM
+    processor = captureCtx.createScriptProcessor(4096, 1, 1);
+    source.connect(processor);
+    processor.connect(captureCtx.destination);
+
+    const nativeRate = captureCtx.sampleRate;
+
+    processor.onaudioprocess = (e) => {
+        if (status !== 'connected' || !ws || ws.readyState !== WebSocket.OPEN) return;
+        const float32 = e.inputBuffer.getChannelData(0);
+        const resampled = resample(float32, nativeRate, 16000);
+        const int16 = float32ToInt16(resampled);
+        const b64 = arrayBufToBase64(int16.buffer);
+
+        ws.send(JSON.stringify({
+            realtimeInput: {
+                audio: {
+                    data: b64,
+                    mimeType: 'audio/pcm;rate=16000'
+                }
+            }
+        }));
+    };
+}
+
+// ── Playback ─────────────────────────────────────────────────
+function initPlayback() {
+    playbackCtx = new AudioContext();
+    nextPlayTime = 0;
+    scheduledSources = [];
+}
+
+function queuePlayback(b64Data) {
+    if (!playbackCtx) return;
+    const buf = base64ToArrayBuf(b64Data);
+    const int16 = new Int16Array(buf);
+    const float32 = int16ToFloat32(int16);
+
+    const audioBuffer = playbackCtx.createBuffer(1, float32.length, 24000);
+    audioBuffer.getChannelData(0).set(float32);
+
+    const source = playbackCtx.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(playbackCtx.destination);
+
+    // Also feed into analyser for visualization when model is speaking
+    if (analyser && captureCtx) {
+        // Use mic analyser — it'll pick up playback if speakers are on
+    }
+
+    const now = playbackCtx.currentTime;
+    const startTime = Math.max(now + 0.01, nextPlayTime);
+    source.start(startTime);
+    nextPlayTime = startTime + audioBuffer.duration;
+
+    scheduledSources.push(source);
+    source.onended = () => {
+        const idx = scheduledSources.indexOf(source);
+        if (idx > -1) scheduledSources.splice(idx, 1);
+    };
+}
+
+function clearPlayback() {
+    scheduledSources.forEach(s => { try { s.stop(); } catch(e){} });
+    scheduledSources = [];
+    nextPlayTime = 0;
+}
+
+// ── Call Control ─────────────────────────────────────────────
+async function startCall() {
+    setStatus('connecting');
+    transcript.innerHTML = '';
+
+    try {
+        initPlayback();
+        await startMic();
+        await connectWS();
+
+        setStatus('connected');
+        initVisualizer();
+        drawVisualizerFrame();
+    } catch (err) {
+        console.error(err);
+        showError('تعذر الاتصال — تأكد من إذن الميكروفون');
+        endCall();
+    }
+}
+
+function endCall() {
+    if (ws) { try { ws.close(); } catch(e){} ws = null; }
+    if (processor) { processor.disconnect(); processor = null; }
+    if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+    if (captureCtx) { captureCtx.close().catch(()=>{}); captureCtx = null; }
+    if (playbackCtx) { clearPlayback(); playbackCtx.close().catch(()=>{}); playbackCtx = null; }
+    analyser = null;
+    if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+    setStatus('idle');
+}
+
+callBtn.addEventListener('click', () => {
+    if (status === 'idle') startCall();
+    else endCall();
+});
+
+// Handle page visibility — end call if hidden for too long
+document.addEventListener('visibilitychange', () => {
+    // Don't auto-end; let the session persist if the user switches tabs briefly
+});
+
+// Resize handler for visualizer
+window.addEventListener('resize', () => {
+    if (status === 'connected') initVisualizer();
+});
+
+// Init
+setStatus('idle');
+</script>
+</body>
+</html>
