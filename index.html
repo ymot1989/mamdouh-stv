@@ -411,7 +411,7 @@ const avatar     = document.getElementById('avatar');
 const vizWrap    = document.getElementById('vizWrap');
 const canvas     = document.getElementById('visualizer');
 const ctx        = canvas.getContext('2d');
-const transcript = document.getElementById('transcript');
+const transcript = null;
 const iconMic    = document.getElementById('iconMic');
 const iconStop   = document.getElementById('iconStop');
 const iconSpin   = document.getElementById('iconSpin');
@@ -455,30 +455,8 @@ function showError(msg) {
     setTimeout(() => el.remove(), 4000);
 }
 
-function addMessage(role, text) {
-    if (!text || !text.trim()) return;
-    // Update existing running message or create new one
-    const existing = transcript.querySelector(`.msg.${role}:last-child`);
-    if (existing && existing.dataset.open === '1') {
-        existing.textContent = text;
-        transcript.scrollTop = transcript.scrollHeight;
-        return;
-    }
-    const el = document.createElement('div');
-    el.className = `msg ${role}`;
-    el.textContent = text;
-    el.dataset.open = '1';
-    transcript.appendChild(el);
-    // Keep max 20 messages
-    while (transcript.children.length > 20) transcript.firstChild.remove();
-    transcript.scrollTop = transcript.scrollHeight;
-}
-
-function closeOpenMessages(role) {
-    transcript.querySelectorAll(`.msg.${role}[data-open="1"]`).forEach(el => {
-        el.dataset.open = '0';
-    });
-}
+function addMessage(role, text) {}
+function closeOpenMessages(role) {}
 
 // ── Audio Helpers ────────────────────────────────────────────
 function float32ToInt16(float32) {
@@ -757,7 +735,6 @@ function clearPlayback() {
 // ── Call Control ─────────────────────────────────────────────
 async function startCall() {
     setStatus('connecting');
-    transcript.innerHTML = '';
 
     try {
         initPlayback();
